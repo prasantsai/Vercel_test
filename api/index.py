@@ -1,7 +1,10 @@
 from flask import Flask,jsonify, request
+from dotenv import load_dotenv
 import openai
 import os
-os.environ["OPENAI_API_KEY"]  = OPENAI_API_KEY
+
+load_dotenv()
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 from langchain.chains import ConversationChain
 from langchain.chat_models import ChatOpenAI
@@ -18,7 +21,9 @@ def home():
     return 'Hello, World!'
 
 @app.route('/conversation',methods=['POST'])
-def conversation_func(user_input):
+def conversation_func():
+    data = request.get_json()
+    user_input = data['user_input']
     template = """ You are a conversational Bot. Respond politely in just one to two short sentences to human input.
     Current conversation:
     {history}
@@ -33,4 +38,4 @@ def conversation_func(user_input):
         verbose=False,
         memory=memory
     )
-    return jsonify(conversation.predict(input=user_input))
+    return jsonify({'Bot response':conversation.predict(input=user_input)})
